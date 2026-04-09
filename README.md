@@ -1,53 +1,81 @@
 # Token Saver — Claude Code Skill
 
-Reduce Claude Code token usage without altering functionality. Works passively via CLAUDE.md rules and actively via `/token-saver` efficiency checks.
+Reduce Claude Code token usage without losing functionality. Works passively via CLAUDE.md rules and actively via `/token-saver` efficiency checks.
 
-## What it does
+## Prerequisites
 
-### Always Active (via CLAUDE.md)
-- **Targeted file reads** — uses `offset` + `limit` instead of reading entire files (~60-80% fewer tokens)
-- **Grep before Read** — finds line numbers first, then reads only relevant sections
-- **Parallel tool calls** — batches independent operations in a single message
+- [Claude Code](https://claude.ai/claude-code) CLI installed
+- GitHub CLI (`gh`) for one-line install
+
+## Installation
+
+**One-line install:**
+
+```bash
+gh repo clone chethanbhatbs/token-saver-skill ~/.claude/skills/token-saver
+```
+
+**Manual install:**
+
+```bash
+git clone https://github.com/chethanbhatbs/token-saver-skill.git
+cp -r token-saver-skill/ ~/.claude/skills/token-saver/
+```
+
+**Verify it's installed:**
+
+```bash
+ls ~/.claude/skills/token-saver/
+```
+
+You should see `SKILL.md` (and any other skill files).
+
+## Usage
+
+```
+/token-saver              # Run mid-conversation efficiency audit
+```
+
+### What it does
+
+- **Targeted reads** — uses `offset` + `limit` instead of reading full files (~60-80% fewer tokens)
+- **Grep before Read** — finds line numbers first, reads only relevant sections
+- **Model switching** — suggests `/model haiku` for simple tasks (~5x cheaper)
+- **Context management** — suggests `/compact` when conversations get long
 - **No wasted agents** — avoids spawning subagents for 1-2 tool call tasks
 - **Concise responses** — answer first, explain only if asked
-- **Context management** — suggests `/compact` when conversations get long
 
-### Model Switching Suggestions
-| Task Type | Suggested Model | Savings |
-|-----------|----------------|---------|
+### Model Recommendations
+
+| Task Type | Model | Savings |
+|-----------|-------|---------|
 | Lookups, grep, formatting, SQL | `/model haiku` | ~5x cheaper |
 | Coding, bug fixes, tests | `/model sonnet` | ~2x cheaper |
 | Architecture, deep analysis | `/model opus` | Full power |
 
-### Invokable Check (`/token-saver`)
-Run mid-conversation to get an efficiency audit:
-- Flags full-file reads that could have been targeted
-- Counts agent spawns and whether they were necessary
-- Recommends model switches
-- Suggests `/compact` if context is large
+### Optional: Add global rules
 
-## Installation
-
-Copy the skill into your Claude Code skills directory:
-
-```bash
-cp -r token-saver ~/.claude/skills/
-```
-
-Add efficiency rules to your global CLAUDE.md:
+For always-on efficiency, add to `~/.claude/CLAUDE.md`:
 
 ```bash
 cat >> ~/.claude/CLAUDE.md << 'EOF'
 
-## Token Efficiency (ALWAYS ACTIVE)
-- Use targeted file reads with offset + limit — never read full files blindly
+## Token Efficiency
+- Use targeted file reads with offset + limit
 - Use Grep first to find line numbers, then Read only those lines
 - Batch independent tool calls in parallel
-- Never spawn Agents for tasks that take 1-2 tool calls
-- Keep responses concise — answer first, explain only if asked
-- Suggest /compact after 15+ messages or major task completion
-- Suggest /model haiku for simple lookups, grep, formatting
+- Suggest /compact after major task completion
 EOF
+```
+
+## How Claude Code Skills Work
+
+Skills are markdown files in `~/.claude/skills/` that give Claude Code specialized instructions for specific tasks. When you invoke a skill (e.g., `/Token Saver`), Claude reads the `SKILL.md` and follows its instructions.
+
+## Uninstall
+
+```bash
+rm -rf ~/.claude/skills/token-saver
 ```
 
 ## License
